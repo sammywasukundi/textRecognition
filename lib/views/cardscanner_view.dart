@@ -1,29 +1,31 @@
-// ignore_for_file: unnecessary_nullable_for_final_variable_declarations, unused_local_variable
+// ignore_for_file: must_be_immutable, unused_local_variable
 
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mlkit_entity_extraction/google_mlkit_entity_extraction.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 import 'theme/app_colors.dart';
 
-// ignore: must_be_immutable
-class RecognizeView extends StatefulWidget {
-  File image;
-  RecognizeView(this.image, {super.key});
+class CardscannerView extends StatefulWidget {
+  late File image;
+  CardscannerView(this.image, {super.key});
 
   @override
-  State<RecognizeView> createState() => _RecognizeViewState();
+  State<CardscannerView> createState() => _CardscannerViewState();
 }
 
-class _RecognizeViewState extends State<RecognizeView> {
+class _CardscannerViewState extends State<CardscannerView> {
   late TextRecognizer textRecognizer;
+  late EntityExtractor entityExtractor;
   @override
   void initState() {
     super.initState();
     textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+    entityExtractor =
+        EntityExtractor(language: EntityExtractorLanguage.english);
     doTextRecognizer();
   }
 
@@ -33,24 +35,24 @@ class _RecognizeViewState extends State<RecognizeView> {
     final RecognizedText recognizedText =
         await textRecognizer.processImage(inputImage);
 
-    results = recognizedText.text;
+  results = recognizedText.text;
+    
+    final List<EntityAnnotation> annotations =
+        await entityExtractor.annotateText(results);
+
+    results = '';
+    for (final annotation in annotations) {
+      annotation.start;
+      annotation.end;
+      annotation.text;
+      for (final entity in annotation.entities) {
+        results+='${entity.type.name}\n${entity.rawValue}\n\n';
+      }
+    }
     //print(results);
     setState(() {
       results;
     });
-    for (TextBlock block in recognizedText.blocks) {
-      final Rect rect = block.boundingBox;
-      final List<Point<int>> cornerPoints = block.cornerPoints;
-      final String text = block.text;
-      final List<String> languages = block.recognizedLanguages;
-
-      for (TextLine line in block.lines) {
-        // Same getters as TextBlock
-        for (TextElement element in line.elements) {
-          // Same getters as TextBlock
-        }
-      }
-    }
   }
 
   @override
@@ -62,12 +64,15 @@ class _RecognizeViewState extends State<RecognizeView> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: Icon(Icons.change_circle_rounded,color: whiteColor,),
+              icon: Icon(
+                Icons.change_circle_rounded,
+                color: whiteColor,
+              ),
             )
           ],
           centerTitle: true,
           backgroundColor: blueColor,
-          title: Text('Reconnaissance', style: TextStyle(color: whiteColor)),
+          title: Text('Scanner', style: TextStyle(color: whiteColor)),
         ),
         body: SingleChildScrollView(
           child: Container(
@@ -92,14 +97,17 @@ class _RecognizeViewState extends State<RecognizeView> {
                                 color: whiteColor,
                               ),
                               Text(
-                                'Résultats de la reconnaissance',
+                                'Résultats du scannage',
                                 style: TextStyle(color: whiteColor),
                               ),
                               InkWell(
-                                onTap:() {
-                                  Clipboard.setData(ClipboardData(text: results));
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text('Copié dans le presse-papiers'),
+                                onTap: () {
+                                  Clipboard.setData(
+                                      ClipboardData(text: results));
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content:
+                                        Text('Copié dans le presse-papiers'),
                                   ));
                                 },
                                 child: Icon(
