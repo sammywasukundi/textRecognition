@@ -57,6 +57,7 @@ class _RecognizeViewState extends State<RecognizeView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          iconTheme: IconThemeData(color: whiteColor),
           actions: [
             IconButton(
               onPressed: () {

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mlkit_entity_extraction/google_mlkit_entity_extraction.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
+import '../models/class_entity.dart';
 import 'theme/app_colors.dart';
 
 class CardscannerView extends StatefulWidget {
@@ -20,6 +21,7 @@ class CardscannerView extends StatefulWidget {
 class _CardscannerViewState extends State<CardscannerView> {
   late TextRecognizer textRecognizer;
   late EntityExtractor entityExtractor;
+  List<EntityDM> entitiesList = [];
   @override
   void initState() {
     super.initState();
@@ -35,8 +37,9 @@ class _CardscannerViewState extends State<CardscannerView> {
     final RecognizedText recognizedText =
         await textRecognizer.processImage(inputImage);
 
-  results = recognizedText.text;
-    
+    entitiesList.clear();
+    results = recognizedText.text;
+
     final List<EntityAnnotation> annotations =
         await entityExtractor.annotateText(results);
 
@@ -46,7 +49,8 @@ class _CardscannerViewState extends State<CardscannerView> {
       annotation.end;
       annotation.text;
       for (final entity in annotation.entities) {
-        results+='${entity.type.name}\n${entity.rawValue}\n\n';
+        results += '${entity.type.name}\n${annotation.text}\n\n';
+        entitiesList.add(EntityDM(entity.type.name, annotation.text));
       }
     }
     //print(results);
@@ -59,6 +63,7 @@ class _CardscannerViewState extends State<CardscannerView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          iconTheme: IconThemeData(color: whiteColor),
           actions: [
             IconButton(
               onPressed: () {
@@ -79,51 +84,100 @@ class _CardscannerViewState extends State<CardscannerView> {
             child: Column(
               children: [
                 Image.file(widget.image),
-                Card(
-                    margin: EdgeInsets.all(8),
-                    color: whiteColor,
-                    child: Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                              color: blueColor,
-                              borderRadius: BorderRadius.circular(2)),
-                          padding: EdgeInsets.all(8),
+                ListView.builder(
+                  itemBuilder: (context, position) {
+                    return Card(
+                      margin: EdgeInsets.only(left: 20, right: 20, top: 10),
+                      color: blueColor,
+                      child: Container(
+                        height: 70,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10, right: 10),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Icon(
-                                Icons.document_scanner,
+                                entitiesList[position].iconData,
+                                size: 25,
                                 color: whiteColor,
                               ),
-                              Text(
-                                'Résultats du scannage',
-                                style: TextStyle(color: whiteColor),
+                              Expanded(
+                                child: Text(
+                                  entitiesList[position].value,
+                                  style: TextStyle(
+                                      color: whiteColor, fontSize: 18),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                               InkWell(
                                 onTap: () {
-                                  Clipboard.setData(
-                                      ClipboardData(text: results));
+                                  Clipboard.setData(ClipboardData(
+                                      text: entitiesList[position].value));
+                                  SnackBar sn =
+                                      SnackBar(content: Text("Copié dans le presse-papiers"));
                                   ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content:
-                                        Text('Copié dans le presse-papiers'),
-                                  ));
+                                      .showSnackBar(sn);
                                 },
                                 child: Icon(
                                   Icons.copy,
                                   color: whiteColor,
                                 ),
-                              ),
+                              )
                             ],
                           ),
                         ),
-                        Text(
-                          results,
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ],
-                    ))
+                      ),
+                    );
+                  },
+                  itemCount: entitiesList.length,
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                )
+                // Card(
+                //     margin: EdgeInsets.all(8),
+                //     color: whiteColor,
+                //     child: Column(
+                //       children: [
+                //         Container(
+                //           decoration: BoxDecoration(
+                //               color: blueColor,
+                //               borderRadius: BorderRadius.circular(2)),
+                //           padding: EdgeInsets.all(8),
+                //           child: Row(
+                //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //             children: [
+                //               Icon(
+                //                 Icons.document_scanner,
+                //                 color: whiteColor,
+                //               ),
+                //               Text(
+                //                 'Résultats du scannage',
+                //                 style: TextStyle(color: whiteColor),
+                //               ),
+                //               InkWell(
+                //                 onTap: () {
+                //                   Clipboard.setData(
+                //                       ClipboardData(text: results));
+                //                   ScaffoldMessenger.of(context)
+                //                       .showSnackBar(SnackBar(
+                //                     content:
+                //                         Text('Copié dans le presse-papiers'),
+                //                   ));
+                //                 },
+                //                 child: Icon(
+                //                   Icons.copy,
+                //                   color: whiteColor,
+                //                 ),
+                //               ),
+                //             ],
+                //           ),
+                //         ),
+                //         Text(
+                //           results,
+                //           style: TextStyle(fontSize: 16),
+                //         ),
+                //       ],
+                //     ))
               ],
             ),
           ),
