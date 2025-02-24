@@ -113,8 +113,9 @@ class _CardscannerViewState extends State<CardscannerView> {
                                 onTap: () {
                                   Clipboard.setData(ClipboardData(
                                       text: entitiesList[position].value));
-                                  SnackBar sn =
-                                      SnackBar(content: Text("Copié dans le presse-papiers"));
+                                  SnackBar sn = SnackBar(
+                                      content:
+                                          Text("Copié dans le presse-papiers"));
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(sn);
                                 },
@@ -133,51 +134,6 @@ class _CardscannerViewState extends State<CardscannerView> {
                   physics: NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                 )
-                // Card(
-                //     margin: EdgeInsets.all(8),
-                //     color: whiteColor,
-                //     child: Column(
-                //       children: [
-                //         Container(
-                //           decoration: BoxDecoration(
-                //               color: blueColor,
-                //               borderRadius: BorderRadius.circular(2)),
-                //           padding: EdgeInsets.all(8),
-                //           child: Row(
-                //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //             children: [
-                //               Icon(
-                //                 Icons.document_scanner,
-                //                 color: whiteColor,
-                //               ),
-                //               Text(
-                //                 'Résultats du scannage',
-                //                 style: TextStyle(color: whiteColor),
-                //               ),
-                //               InkWell(
-                //                 onTap: () {
-                //                   Clipboard.setData(
-                //                       ClipboardData(text: results));
-                //                   ScaffoldMessenger.of(context)
-                //                       .showSnackBar(SnackBar(
-                //                     content:
-                //                         Text('Copié dans le presse-papiers'),
-                //                   ));
-                //                 },
-                //                 child: Icon(
-                //                   Icons.copy,
-                //                   color: whiteColor,
-                //                 ),
-                //               ),
-                //             ],
-                //           ),
-                //         ),
-                //         Text(
-                //           results,
-                //           style: TextStyle(fontSize: 16),
-                //         ),
-                //       ],
-                //     ))
               ],
             ),
           ),

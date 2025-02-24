@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:text_recognition/views/cardscanner_view.dart';
 import 'package:text_recognition/views/theme/app_colors.dart';
@@ -174,6 +175,16 @@ class _MyHomePageState extends State<MyHomePage> {
                       );
                       if (xfile != null) {
                         File image = File(xfile.path);
+                        final editedImage = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ImageCropper(
+                              image: image
+                                  .readAsBytesSync(), // <-- Uint8List of image
+                            ),
+                          ),
+                        );
+                        image.writeAsBytes(editedImage);
                         if (recognize) {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (ctx) {
