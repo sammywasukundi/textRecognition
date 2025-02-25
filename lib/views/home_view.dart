@@ -5,9 +5,9 @@ import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:text_recognition/views/cardscanner_view.dart';
 import 'package:text_recognition/views/theme/app_colors.dart';
-import 'package:text_recognition/views/widgets/cardmiddle_widget.dart';
 
 import 'recognize_view.dart';
+import 'widgets/cardmiddle_widget.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -27,6 +27,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool scan = false;
   bool recognize = true;
   bool enhance = false;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -184,17 +185,19 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                         );
-                        image.writeAsBytes(editedImage);
-                        if (recognize) {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (ctx) {
-                            return RecognizeView(image);
-                          }));
-                        } else if (scan) {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (ctx) {
-                            return CardscannerView(image);
-                          }));
+                        if (editedImage != null && editedImage is List<int>) {
+                          await image.writeAsBytes(editedImage);
+                          if (recognize) {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (ctx) {
+                              return RecognizeView(image);
+                            }));
+                          } else if (scan) {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (ctx) {
+                              return CardscannerView(image);
+                            }));
+                          }
                         }
                       }
                     },
@@ -208,29 +211,4 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // processImage(File image) async {
-  //   final editedImage = await Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => ImageCropper(
-  //         image: image.readAsBytesSync(), // <-- Uint8List of image
-  //       ),
-  //     ),
-  //   );
-  //   image.writeAsBytes(editedImage);
-  //   if (recognize) {
-  //     Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-  //       return RecognizerScreen(image);
-  //     }));
-  //   } else if (scan) {
-  //     Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-  //       return CardScanner(image);
-  //     }));
-  //   }
-  //   else if (enhance) {
-  //     Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-  //       return EnhanceScreen(image);
-  //     }));
-  //   }
-  // }
 }
