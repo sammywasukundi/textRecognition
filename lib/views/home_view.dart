@@ -132,6 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
+          //this is the card middle widget
           cardMiddle(context),
           Card(
             color: blueColor,
