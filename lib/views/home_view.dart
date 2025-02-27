@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,7 +8,6 @@ import 'package:text_recognition/views/cardscanner_view.dart';
 import 'package:text_recognition/views/theme/app_colors.dart';
 
 import 'recognize_view.dart';
-import 'widgets/cardmiddle_widget.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -18,10 +18,39 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late ImagePicker imagePicker;
+  late List<CameraDescription> _cameras;
+
   @override
   void initState() {
     super.initState();
     imagePicker = ImagePicker();
+    initializeCamera();
+  }
+
+  late CameraController controller;
+  bool isInit = false;
+  initializeCamera() async {
+    _cameras = await availableCameras();
+    controller = CameraController(_cameras[1], ResolutionPreset.max);
+    controller.initialize().then((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        isInit = true;
+      });
+    }).catchError((Object e) {
+      if (e is CameraException) {
+        switch (e.code) {
+          case 'CameraAccessDenied':
+            // Handle access errors here.
+            break;
+          default:
+            // Handle other errors here.
+            break;
+        }
+      }
+    });
   }
 
   bool scan = false;
@@ -132,8 +161,36 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          //this is the card middle widget
-          cardMiddle(context),
+          Card(
+            color: greyColor,
+            // child: Stack(
+            //   children: [
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                height: MediaQuery.of(context).size.height - 260,
+                child: isInit
+                    ? AspectRatio(
+                        aspectRatio: controller.value.aspectRatio,
+                        child: CameraPreview(controller))
+                    : Container(),
+              ),
+            ),
+                // Container(
+                //   width: MediaQuery.of(context).size.width,
+                //   height: MediaQuery.of(context).size.height - 260,
+                //   margin: EdgeInsets.all(2),
+                //   child: Image.asset(
+                //     'assets/frame.png',
+                //     //fit: BoxFit.fill,
+                //   ),
+                // )
+            //   ],
+            // ),
+          ),
           Card(
             color: blueColor,
             child: SizedBox(
@@ -156,12 +213,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: whiteColor,
                     ),
                     onTap: () async {
-                      // await controller.takePicture().then((value) {
-                      //   if (value != null) {
-                      //     File image = File(value.path);
-                      //     processImage(image);
-                      //   }
-                      // });
+                      await controller.takePicture().then((value) {
+                        // ignore: unnecessary_null_comparison
+                        if (value != null) {
+                          File image = File(value.path);
+                          processImage(image);
+                        }
+                      });
                     },
                   ),
                   InkWell(
@@ -177,29 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       );
                       if (xfile != null) {
                         File image = File(xfile.path);
-                        final editedImage = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ImageCropper(
-                              image: image
-                                  .readAsBytesSync(), // <-- Uint8List of image
-                            ),
-                          ),
-                        );
-                        if (editedImage != null && editedImage is List<int>) {
-                          await image.writeAsBytes(editedImage);
-                          if (recognize) {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (ctx) {
-                              return RecognizeView(image);
-                            }));
-                          } else if (scan) {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (ctx) {
-                              return CardscannerView(image);
-                            }));
-                          }
-                        }
+                        processImage(image);
                       }
                     },
                   )
@@ -212,4 +248,26 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  processImage(File image) async {
+    final editedImage = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ImageCropper(
+          image: image.readAsBytesSync(), // <-- Uint8List of image
+        ),
+      ),
+    );
+    if (editedImage != null && editedImage is List<int>) {
+      await image.writeAsBytes(editedImage);
+      if (recognize) {
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+          return RecognizeView(image);
+        }));
+      } else if (scan) {
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+          return CardscannerView(image);
+        }));
+      }
+    }
+  }
 }
