@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:text_recognition/views/cardscanner_view.dart';
 import 'package:text_recognition/views/theme/app_colors.dart';
 
+import 'enhance_view.dart';
 import 'recognize_view.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -31,7 +33,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isInit = false;
   initializeCamera() async {
     _cameras = await availableCameras();
-    controller = CameraController(_cameras[1], ResolutionPreset.max);
+    controller = CameraController(_cameras[0], ResolutionPreset.max);
     controller.initialize().then((_) {
       if (!mounted) {
         return;
@@ -163,33 +165,33 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Card(
             color: greyColor,
-            // child: Stack(
-            //   children: [
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                decoration: BoxDecoration(
+            child: Stack(
+              children: [
+                ClipRRect(
                   borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    height: MediaQuery.of(context).size.height - 260,
+                    child: isInit
+                        ? AspectRatio(
+                            aspectRatio: controller.value.aspectRatio,
+                            child: CameraPreview(controller))
+                        : Container(),
+                  ),
                 ),
-                height: MediaQuery.of(context).size.height - 260,
-                child: isInit
-                    ? AspectRatio(
-                        aspectRatio: controller.value.aspectRatio,
-                        child: CameraPreview(controller))
-                    : Container(),
-              ),
+                Container(
+                  color: greyColor,
+                  height: 1,
+                  width: MediaQuery.of(context).size.width,
+                  margin: EdgeInsets.all(20),
+                ).animate(onPlay: (controller) => controller.repeat()).moveY(
+                    begin: 0,
+                    end: MediaQuery.of(context).size.height - 320,
+                    duration: 2000.ms)
+              ],
             ),
-                // Container(
-                //   width: MediaQuery.of(context).size.width,
-                //   height: MediaQuery.of(context).size.height - 260,
-                //   margin: EdgeInsets.all(2),
-                //   child: Image.asset(
-                //     'assets/frame.png',
-                //     //fit: BoxFit.fill,
-                //   ),
-                // )
-            //   ],
-            // ),
           ),
           Card(
             color: blueColor,
@@ -266,6 +268,10 @@ class _MyHomePageState extends State<MyHomePage> {
       } else if (scan) {
         Navigator.push(context, MaterialPageRoute(builder: (ctx) {
           return CardscannerView(image);
+        }));
+      } else if (enhance) {
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+          return EnhanceView(image);
         }));
       }
     }
