@@ -150,7 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               color: enhance ? blackColor : whiteColor,
                             ),
                             Text(
-                              'Agrandir',
+                              'Améliorer',
                               style: TextStyle(
                                   color: enhance ? blackColor : whiteColor,
                                   fontSize: 12,

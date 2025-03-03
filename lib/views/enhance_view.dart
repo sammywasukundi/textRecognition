@@ -70,7 +70,7 @@ class _RecognizeViewState extends State<EnhanceView> {
                 setState(() {
                   inputImage;
                 });
-                enhanceImage();
+                //enhanceImage();
               },
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
